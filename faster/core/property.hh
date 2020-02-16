@@ -96,6 +96,7 @@
  * *_NC                  - not constexpr
  * *_NCP                 - not copiable (no copy setter)
  * *_NF                  - does not declare a field
+ * *_NS                  - does not declare any setters
  * *_OV                  - mark the functions as override
  * *_PBV                 - declares a PBV property
  * *_PRIV                - declares a private property

@@ -33,16 +33,17 @@ enum : features
   NOT_CONSTEXPR          = 0x00000040,
   NO_COPYING             = 0x00000080,
   NO_FIELD               = 0x00000100,
-  OVERRIDE               = 0x00000200,
-  PASS_BY_VALUE          = 0x00000400,
-  PRIVATE                = 0x00000800,
-  PRIV_SET               = 0x00001000,
-  READ_ONLY              = 0x00002000,
-  REFERENCE              = 0x00004000,
-  RWLOCK                 = 0x00008000,
-  VOLATILE               = 0x00010000,
-  VIRTUAL                = 0x00020000,
-  FEATURES_MAX           = 0x0003FFFF,
+  NO_SETTERS             = 0x00000200,
+  OVERRIDE               = 0x00000400,
+  PASS_BY_VALUE          = 0x00000800,
+  PRIVATE                = 0x00001000,
+  PRIV_SET               = 0x00002000,
+  READ_ONLY              = 0x00004000,
+  REFERENCE              = 0x00008000,
+  RWLOCK                 = 0x00010000,
+  VOLATILE               = 0x00020000,
+  VIRTUAL                = 0x00040000,
+  FEATURES_MAX           = 0x0007FFFF,
 };
 
 namespace
@@ -76,7 +77,7 @@ namespace
       return false;
 
     if (f & NO_COPYING
-        && f & (PASS_BY_VALUE | READ_ONLY))
+        && f & (NO_SETTERS | PASS_BY_VALUE | READ_ONLY))
       return false;
 
     if (f & NO_FIELD
@@ -96,11 +97,12 @@ namespace
       return false;
 
     if (f & PRIV_SET
-        && f & REFERENCE)
+        && f & (NO_SETTERS | REFERENCE))
       return false;
 
     if (f & READ_ONLY
-        && f & (LOCK | MUTABLE | PRIV_SET | REFERENCE | RWLOCK | VOLATILE))
+        && f & (LOCK | MUTABLE | NO_SETTERS | PRIV_SET | REFERENCE | RWLOCK
+                | VOLATILE))
       return false;
 
     if (f & VIRTUAL
@@ -133,6 +135,9 @@ namespace
       cout << " * The property type is passed by value.\n";
     else if (f & REFERENCE)
       cout << " * The property type should be a reference type.\n";
+
+    if (f & NO_SETTERS)
+      cout << " * No setters are generated.\n";
 
     // Field
     if (f & ABSTRACT)
@@ -217,6 +222,8 @@ namespace
       cout << "_NCP";
     if (f & NO_FIELD)
       cout << "_NF";
+    if (f & NO_SETTERS)
+      cout << "_NS";
     if (f & OVERRIDE)
       cout << "_OV";
     if (f & PASS_BY_VALUE)
@@ -428,7 +435,7 @@ namespace
   declare_setter (features f,
                   bool &first_item)
   {
-    if (f & (NO_COPYING | READ_ONLY | REFERENCE))
+    if (f & (NO_COPYING | NO_SETTERS | READ_ONLY | REFERENCE))
       return;
 
     begin_item (first_item);
@@ -469,7 +476,7 @@ namespace
   declare_move_setter (features f,
                        bool &first_item)
   {
-    if (f & (PASS_BY_VALUE | READ_ONLY | REFERENCE))
+    if (f & (NO_SETTERS | PASS_BY_VALUE | READ_ONLY | REFERENCE))
       return;
 
     begin_item (first_item);
