@@ -94,6 +94,7 @@
  *                         getter, all methods are const. The field, if
  *                         generated, is mutable.
  * *_NC                  - not constexpr
+ * *_NCP                 - not copiable (no copy setter)
  * *_NF                  - does not declare a field
  * *_OV                  - mark the functions as override
  * *_PBV                 - declares a PBV property

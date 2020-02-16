@@ -31,17 +31,18 @@ enum : features
   LOCK                   = 0x00000010,
   MUTABLE                = 0x00000020,
   NOT_CONSTEXPR          = 0x00000040,
-  NO_FIELD               = 0x00000080,
-  OVERRIDE               = 0x00000100,
-  PASS_BY_VALUE          = 0x00000200,
-  PRIVATE                = 0x00000400,
-  PRIV_SET               = 0x00000800,
-  READ_ONLY              = 0x00001000,
-  REFERENCE              = 0x00002000,
-  RWLOCK                 = 0x00004000,
-  VOLATILE               = 0x00008000,
-  VIRTUAL                = 0x00010000,
-  FEATURES_MAX           = 0x0001FFFF,
+  NO_COPYING             = 0x00000080,
+  NO_FIELD               = 0x00000100,
+  OVERRIDE               = 0x00000200,
+  PASS_BY_VALUE          = 0x00000400,
+  PRIVATE                = 0x00000800,
+  PRIV_SET               = 0x00001000,
+  READ_ONLY              = 0x00002000,
+  REFERENCE              = 0x00004000,
+  RWLOCK                 = 0x00008000,
+  VOLATILE               = 0x00010000,
+  VIRTUAL                = 0x00020000,
+  FEATURES_MAX           = 0x0003FFFF,
 };
 
 namespace
@@ -67,11 +68,15 @@ namespace
       return false;
 
     if (f & MUTABLE
-        && f & PRIV_SET)
+        && f & (PRIV_SET | REFERENCE))
       return false;
 
     if (f & NOT_CONSTEXPR
         && f & OVERRIDE)
+      return false;
+
+    if (f & NO_COPYING
+        && f & (PASS_BY_VALUE | READ_ONLY))
       return false;
 
     if (f & NO_FIELD
@@ -122,7 +127,9 @@ namespace
     else
       cout << " * The type is taken from the parameter Type.\n";
 
-    if (f & PASS_BY_VALUE)
+    if (f & NO_COPYING)
+      cout << " * The property type is not copied, there is no copy setter.\n";
+    else if (f & PASS_BY_VALUE)
       cout << " * The property type is passed by value.\n";
     else if (f & REFERENCE)
       cout << " * The property type should be a reference type.\n";
@@ -206,6 +213,8 @@ namespace
       cout << "_MUTABLE";
     if (f & NOT_CONSTEXPR)
       cout << "_NC";
+    if (f & NO_COPYING)
+      cout << "_NCP";
     if (f & NO_FIELD)
       cout << "_NF";
     if (f & OVERRIDE)
@@ -419,7 +428,7 @@ namespace
   declare_setter (features f,
                   bool &first_item)
   {
-    if (f & (READ_ONLY | REFERENCE))
+    if (f & (NO_COPYING | READ_ONLY | REFERENCE))
       return;
 
     begin_item (first_item);
