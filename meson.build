@@ -18,7 +18,7 @@ project (
 
   default_options: ['cpp_std=c++17'],
   license: 'MIT',
-  meson_version: '>= 0.53',
+  meson_version: '>= 0.49',
   version: '0.1.0'
 )
 
